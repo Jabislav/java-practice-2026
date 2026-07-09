@@ -1,0 +1,128 @@
+package ru.itis.shop.user.api;
+
+import ru.itis.shop.user.application.UserService;
+import ru.itis.shop.user.domain.User;
+
+import java.util.Scanner;
+
+public class UserConsoleOperations {
+
+    private final UserService userService;
+    private final Scanner scanner;
+
+    public UserConsoleOperations(UserService userService) {
+        this.userService = userService;
+        this.scanner = new Scanner(System.in);
+    }
+
+    public void showMenu() {
+        printUserMenu();
+
+        String command = scanner.nextLine();
+
+        switch (command) {
+            case "1": {
+                signUp();
+            }
+            break;
+            case "2": {
+                signIn();
+            }
+            break;
+            case "3": {
+                findById();
+            }
+            break;
+            case "4": {
+                updateProfile();
+            }
+            case "5":{
+                findAll();
+            }
+            break;
+            case "0": {
+                System.exit(0);
+            }
+        }
+    }
+
+    private static void printUserMenu() {
+        System.out.println("1. Регистрация пользователя");
+        System.out.println("2. Вход в систему");
+        System.out.println("3. Найти пользователя по id");
+        System.out.println("4. Обновить описание профиля");
+        System.out.println("5. Показать всех пользователей");
+        System.out.println("0. Выход");
+    }
+
+    private void signUp() {
+        System.out.println("Сейчас будем регистрировать пользователя");
+        System.out.println("Введите email:");
+        String email = scanner.nextLine();
+        System.out.println("Введите password:");
+        String password = scanner.nextLine();
+        System.out.println("Введите описание профиля:");
+        String profileDescription = scanner.nextLine();
+
+        userService.signUp(email, password, profileDescription);
+    }
+
+
+    private void signIn() {
+        System.out.println("Вы можете войти в приложение");
+        System.out.println("Введите email:");
+        String email = scanner.nextLine();
+        System.out.println("Введите password:");
+        String password = scanner.nextLine();
+
+        if (userService.signIn(email, password)) {
+            System.out.println("Вы вошли в приложение");
+        } else {
+            System.out.println("Email или пароль не верны");
+        }
+    }
+
+    private void findById() {
+        System.out.println("Введите id пользователя:");
+        String userId = scanner.nextLine();
+        if(!userService.findById(userId).isPresent()) {
+            System.out.println("Пользователь с таким id не найден");
+            return;
+        }
+        else {
+            System.out.println("Пользователь найден: " + userService.findById(userId).get().getEmail());
+            updateProfile();
+        }
+    }
+
+    private void updateProfile() {
+        System.out.println("Введите id пользователя:");
+        String userId = scanner.nextLine();
+        if(!userService.findById(userId).isPresent()) {
+            System.out.println("Пользователь с таким id не найден");
+            return;
+        }
+        else {
+            System.out.println("Текущее описание профиля: " + userService.findById(userId).get().getProfileDescription());
+            System.out.println("Вы хотите изменить описание профиля? (да/нет)");
+            String answer = scanner.nextLine();
+            if(answer.equals("да")) {
+                System.out.println("Введите новое описание профиля:");
+                String newProfileDescription = scanner.nextLine();
+                userService.updateProfile(userId, newProfileDescription);
+                System.out.println("Описание профиля обновлено");
+            }
+            else {
+                System.out.println("Описание профиля не изменено");
+            }
+        }
+    }
+
+    private void findAll(){
+        System.out.println("Список всех пользователей:");
+        for(User user : userService.findAll()){
+            System.out.println("Name: " + user.getName() + ", Email: " + user.getEmail());
+        }
+    }
+
+}
